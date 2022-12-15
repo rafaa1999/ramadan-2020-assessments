@@ -73,17 +73,45 @@ function getSingleVidReq(vidInfo, isPrepend = false){
 
 }
 
-// The entry point 
-document.addEventListener('DOMContentLoaded', function(){
-  const formVidReqElm = document.getElementById('formVideoRequest');
+function loadAllVidReqs(sortBy = 'newFirst'){
 
-  fetch('http://localhost:7777/video-request')
+  fetch(`http://localhost:7777/video-request?sortBy=${sortBy}`)
   .then(bold=>bold.json())
   .then(data=>{
+    listOfVidsElm.innerHTML = '';
     data.forEach(vidInfo => {
       getSingleVidReq(vidInfo)
     });
   });
+
+}
+
+// The entry point of js
+document.addEventListener('DOMContentLoaded', function(){
+
+  const formVidReqElm = document.getElementById('formVideoRequest');
+  const sortByElm = document.querySelectorAll('[id*=sort_by_]')
+
+  loadAllVidReqs();
+
+  sortByElm.forEach(elm=>{
+    elm.addEventListener('click',function(e){
+      e.preventDefault();
+
+      const sortBy = this.querySelector('input');
+      // console.log(sortBy.value);
+      loadAllVidReqs(sortBy.value)
+
+      this.classList.add('active');
+      if(sortBy.value === 'topVotedFirst'){
+        document.getElementById('sort_by_new').classList.remove('active');
+      }else{
+        document.getElementById('sort_by_top').classList.remove('active');
+      }
+
+
+    })
+  })
 
   formVidReqElm.addEventListener('submit',(e)=>{
       e.preventDefault(); 

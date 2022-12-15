@@ -15,7 +15,7 @@
     "npm": "^6.9.0"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "license": "ISC"
 }
