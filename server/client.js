@@ -1,4 +1,7 @@
-function getSingleVidReq(vidInfo){
+
+const listOfVidsElm = document.getElementById('listOfRequests');
+
+function getSingleVidReq(vidInfo, isPrepend = false){
   const vidReqContainerElm = document.createElement('div');
   vidReqContainerElm.innerHTML = `
   <div class="card mb-3">
@@ -35,46 +38,50 @@ function getSingleVidReq(vidInfo){
       </div>
   </div>
   `;
-  return vidReqContainerElm;
+
+  if(isPrepend){
+    listOfVidsElm.prepend(vidReqContainerElm)
+  }else{
+    listOfVidsElm.appendChild(vidReqContainerElm);
+  }
+
+  const voteUpsElm = document.getElementById(`votes_ups_${vidInfo._id}`);
+  const voteDownsElm = document.getElementById(`votes_downs_${vidInfo._id}`);
+  const scoreVote = document.getElementById(`score_vote_${vidInfo._id}`);
+
+  voteUpsElm.addEventListener('click', (e)=>{
+    fetch('http://localhost:7777/video-request/vote',{
+      method: 'PUT',
+      headers: {'content-Type': 'application/json'},
+      body: JSON.stringify({ id : vidInfo._id, vote_type : 'ups' })
+    }).then(bold => bold.json())
+      .then(data => {
+        scoreVote.innerText = data.ups - data.downs ;
+      })
+  })
+
+  voteDownsElm.addEventListener('click', (e)=>{
+    fetch('http://localhost:7777/video-request/vote',{
+      method: 'PUT',
+      headers: {'content-Type': 'application/json'},
+      body: JSON.stringify({ id : vidInfo._id, vote_type : 'downs' })
+    }).then(bold => bold.json())
+      .then(data => {
+        scoreVote.innerText = data.ups - data.downs ;
+      })
+  })
+
 }
 
+// The entry point 
 document.addEventListener('DOMContentLoaded', function(){
   const formVidReqElm = document.getElementById('formVideoRequest');
-  const listOfVidsElm = document.getElementById('listOfRequests');
 
   fetch('http://localhost:7777/video-request')
   .then(bold=>bold.json())
   .then(data=>{
     data.forEach(vidInfo => {
-
-      listOfVidsElm.appendChild(getSingleVidReq(vidInfo));
-
-      const voteUpsElm = document.getElementById(`votes_ups_${vidInfo._id}`);
-      const voteDownsElm = document.getElementById(`votes_downs_${vidInfo._id}`);
-      const scoreVote = document.getElementById(`score_vote_${vidInfo._id}`);
-    
-      voteUpsElm.addEventListener('click', (e)=>{
-        fetch('http://localhost:7777/video-request/vote',{
-          method: 'PUT',
-          headers: {'content-Type': 'application/json'},
-          body: JSON.stringify({ id : vidInfo._id, vote_type : 'ups' })
-        }).then(bold => bold.json())
-          .then(data => {
-            scoreVote.innerText = data.ups - data.downs ;
-          })
-      })
-
-      voteDownsElm.addEventListener('click', (e)=>{
-        fetch('http://localhost:7777/video-request/vote',{
-          method: 'PUT',
-          headers: {'content-Type': 'application/json'},
-          body: JSON.stringify({ id : vidInfo._id, vote_type : 'downs' })
-        }).then(bold => bold.json())
-          .then(data => {
-            scoreVote.innerText = data.ups - data.downs ;
-          })
-      })
-    
+      getSingleVidReq(vidInfo)
     });
   });
 
@@ -87,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function(){
         body: formData,
       }).then((bold) => bold.json())
       .then((data)=>{
-        listOfVidsElm.prepend(getSingleVidReq(data));
+        getSingleVidReq(data, true);
       })
   })
 
