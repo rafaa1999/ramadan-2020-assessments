@@ -1,6 +1,9 @@
 
 const listOfVidsElm = document.getElementById('listOfRequests');
+let sortBy = 'newFirst';
+let searchTerm = '';
 
+// Get Videos
 function getSingleVidReq(vidInfo, isPrepend = false){
   const vidReqContainerElm = document.createElement('div');
   vidReqContainerElm.innerHTML = `
@@ -73,9 +76,10 @@ function getSingleVidReq(vidInfo, isPrepend = false){
 
 }
 
-function loadAllVidReqs(sortBy = 'newFirst'){
+// LOADING
+function loadAllVidReqs(sortBy = 'newFirst', searchTerm =''){
 
-  fetch(`http://localhost:7777/video-request?sortBy=${sortBy}`)
+  fetch(`http://localhost:7777/video-request?sortBy=${sortBy}&searchTerm=${searchTerm}`)
   .then(bold=>bold.json())
   .then(data=>{
     listOfVidsElm.innerHTML = '';
@@ -86,24 +90,38 @@ function loadAllVidReqs(sortBy = 'newFirst'){
 
 }
 
+// Debounce
+function debounce(fn, time){
+  let timeout;
+
+  return function(...args){
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn.apply(this, args), time)
+
+  }
+
+}
+
 // The entry point of js
 document.addEventListener('DOMContentLoaded', function(){
 
   const formVidReqElm = document.getElementById('formVideoRequest');
-  const sortByElm = document.querySelectorAll('[id*=sort_by_]')
+  const sortByElm = document.querySelectorAll('[id*=sort_by_]');
+  const searchBoxElm = document.getElementById('search_box');
 
   loadAllVidReqs();
 
+  // Sort videos
   sortByElm.forEach(elm=>{
     elm.addEventListener('click',function(e){
       e.preventDefault();
 
-      const sortBy = this.querySelector('input');
+      sortBy = this.querySelector('input').value;
       // console.log(sortBy.value);
-      loadAllVidReqs(sortBy.value)
+      loadAllVidReqs(sortBy, searchTerm)
 
       this.classList.add('active');
-      if(sortBy.value === 'topVotedFirst'){
+      if(sortBy === 'topVotedFirst'){
         document.getElementById('sort_by_new').classList.remove('active');
       }else{
         document.getElementById('sort_by_top').classList.remove('active');
@@ -113,6 +131,16 @@ document.addEventListener('DOMContentLoaded', function(){
     })
   })
 
+  // Search videos
+  searchBoxElm.addEventListener('input',
+   debounce((e)=>{
+    searchTerm = e.target.value;
+
+    loadAllVidReqs(sortBy, searchTerm);
+  },300)
+  );
+
+  // Submit video
   formVidReqElm.addEventListener('submit',(e)=>{
       e.preventDefault(); 
       const formData = new FormData(formVidReqElm);
