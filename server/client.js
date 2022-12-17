@@ -1,7 +1,12 @@
 
 const listOfVidsElm = document.getElementById('listOfRequests');
-let sortBy = 'newFirst';
-let searchTerm = '';
+
+const state = {
+  sortBy : 'newFirst',
+  searchTerm : '',
+  userId : ''
+    
+}
 
 // Get Videos
 function getSingleVidReq(vidInfo, isPrepend = false){
@@ -105,19 +110,19 @@ function debounce(fn, time){
 // Validation
 function checkValidity(formData){
   
-  const name = formData.get('author_name');
-  const email = formData.get('author_email');
+  // const name = formData.get('author_name');
+  // const email = formData.get('author_email');
   const topic = formData.get('topic_title');
   const topicDetails = formData.get('topic_details');
 
-  if(!name){
-    document.querySelector('[name=author_name]').classList.add('is-invalid')
-  }
+  // if(!name){
+  //   document.querySelector('[name=author_name]').classList.add('is-invalid')
+  // }
 
-  const emailPattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-  if(!email || !emailPattern.test(email) ){
-    document.querySelector('[name=author_email]').classList.add('is-invalid')
-  }
+  // const emailPattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  // if(!email || !emailPattern.test(email) ){
+  //   document.querySelector('[name=author_email]').classList.add('is-invalid')
+  // }
   
   if(!topic || topic.length > 30){
     document.querySelector('[name=topic_title]').classList.add('is-invalid')
@@ -149,6 +154,15 @@ document.addEventListener('DOMContentLoaded', function(){
   const sortByElm = document.querySelectorAll('[id*=sort_by_]');
   const searchBoxElm = document.getElementById('search_box');
 
+
+  const formLoginElm = document.querySelector('.form-login');
+  const appContentElm = document.querySelector('.app-content')
+  if(window.location.search){
+     state.userId = new URLSearchParams(window.location.search).get('id')
+     formLoginElm.classList.add('d-none')
+     appContentElm.classList.remove('d-none')
+  }
+
   loadAllVidReqs();
 
   // Sort videos
@@ -156,12 +170,12 @@ document.addEventListener('DOMContentLoaded', function(){
     elm.addEventListener('click',function(e){
       e.preventDefault();
 
-      sortBy = this.querySelector('input').value;
+      state.sortBy = this.querySelector('input').value;
       // console.log(sortBy.value);
-      loadAllVidReqs(sortBy, searchTerm)
+      loadAllVidReqs(state.sortBy, state.searchTerm)
 
       this.classList.add('active');
-      if(sortBy === 'topVotedFirst'){
+      if(state.sortBy === 'topVotedFirst'){
         document.getElementById('sort_by_new').classList.remove('active');
       }else{
         document.getElementById('sort_by_top').classList.remove('active');
@@ -174,9 +188,9 @@ document.addEventListener('DOMContentLoaded', function(){
   // Search videos
   searchBoxElm.addEventListener('input',
    debounce((e)=>{
-    searchTerm = e.target.value;
+    state.searchTerm = e.target.value;
 
-    loadAllVidReqs(sortBy, searchTerm);
+    loadAllVidReqs(state.sortBy, state.searchTerm);
   },300)
   );
 
@@ -185,6 +199,8 @@ document.addEventListener('DOMContentLoaded', function(){
       e.preventDefault(); 
 
       const formData = new FormData(formVidReqElm);
+
+      formData.append('author_id',state.userId)
 
       const isValid = checkValidity(formData);
 
