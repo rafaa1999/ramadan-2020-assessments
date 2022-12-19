@@ -61,7 +61,7 @@ function getSingleVidReq(vidInfo, isPrepend = false){
     fetch('http://localhost:7777/video-request/vote',{
       method: 'PUT',
       headers: {'content-Type': 'application/json'},
-      body: JSON.stringify({ id : vidInfo._id, vote_type : 'ups' })
+      body: JSON.stringify({ id : vidInfo._id, vote_type : 'ups', user_id : new URLSearchParams(window.location.search).get('id')  })
     }).then(bold => bold.json())
       .then(data => {
         scoreVote.innerText = data.ups - data.downs ;
@@ -72,7 +72,7 @@ function getSingleVidReq(vidInfo, isPrepend = false){
     fetch('http://localhost:7777/video-request/vote',{
       method: 'PUT',
       headers: {'content-Type': 'application/json'},
-      body: JSON.stringify({ id : vidInfo._id, vote_type : 'downs' })
+      body: JSON.stringify({ id : vidInfo._id, vote_type : 'downs', user_id : new URLSearchParams(window.location.search).get('id') })
     }).then(bold => bold.json())
       .then(data => {
         scoreVote.innerText = data.ups - data.downs ;
