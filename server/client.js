@@ -54,7 +54,7 @@ function getSingleVidReq(vidInfo, isPrepend = false){
   }else{
     listOfVidsElm.appendChild(vidReqContainerElm);
   }
-
+  
   applyVoteStyle(vidInfo._id, vidInfo.votes)
 
   const scoreVote = document.getElementById(`score_vote_${vidInfo._id}`);
@@ -68,11 +68,10 @@ function getSingleVidReq(vidInfo, isPrepend = false){
       fetch('http://localhost:7777/video-request/vote',{
         method: 'PUT',
         headers: {'content-Type': 'application/json'},
-        body: JSON.stringify({ id , vote_type , user_is: state.userId })
+        body: JSON.stringify({ id , vote_type , user_id: state.userId })
       }).then(bold => bold.json())
         .then(data => {
           scoreVote.innerText = data.ups.length - data.downs.length ;
-
           applyVoteStyle(id, data, vote_type)
   
         })
@@ -97,14 +96,12 @@ function applyVoteStyle(video_id, votes_list, vote_type){
   const voteUpsElm = document.getElementById(`votes_ups_${video_id}`);
   const voteDownsElm = document.getElementById(`votes_downs_${video_id}`);
 
-  const voteDirElm = vote_type == 'ups' ? voteUpsElm : voteDownsElm
-  const otherDirElm = vote_type == 'ups' ? voteDownsElm : voteUpsElm
+  const voteDirElm = vote_type === 'ups' ? voteUpsElm : voteDownsElm
+  const otherDirElm = vote_type === 'ups' ? voteDownsElm : voteUpsElm
   
-  if(!votes_list[vote_type].includes(state.userId)){
-    voteDirElm.style.opacity = '1';
+  if(votes_list[vote_type].includes(state.userId)){
+    voteDirElm.style.opacity = 1;
     otherDirElm.style.opacity = '0.5';
-  }else{
-    otherDirElm.style.opacity = '1';
   }
 }
 
@@ -119,7 +116,6 @@ function loadAllVidReqs(sortBy = 'newFirst', searchTerm =''){
       getSingleVidReq(vidInfo)
     });
   });
-
 }
 
 // Debounce
@@ -131,7 +127,6 @@ function debounce(fn, time){
     timeout = setTimeout(() => fn.apply(this, args), time)
 
   }
-
 }
 
 // Validation
@@ -149,7 +144,7 @@ function checkValidity(formData){
   // const emailPattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   // if(!email || !emailPattern.test(email) ){
   //   document.querySelector('[name=author_email]').classList.add('is-invalid')
-  // }
+   // }
   
   if(!topic || topic.length > 30){
     document.querySelector('[name=topic_title]').classList.add('is-invalid')
@@ -169,9 +164,7 @@ function checkValidity(formData){
     })
     return false;
   }
-
   return true;
-
 }
 
 // The entry point of js
@@ -181,9 +174,8 @@ document.addEventListener('DOMContentLoaded', function(){
   const sortByElm = document.querySelectorAll('[id*=sort_by_]');
   const searchBoxElm = document.getElementById('search_box');
 
-
   const formLoginElm = document.querySelector('.form-login');
-  const appContentElm = document.querySelector('.app-content')
+  const appContentElm = document.querySelector('.app-content');
   if(window.location.search){
      state.userId = new URLSearchParams(window.location.search).get('id')
      formLoginElm.classList.add('d-none')
