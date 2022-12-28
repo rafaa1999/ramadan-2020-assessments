@@ -3,6 +3,7 @@ const SUPER_USER_ID = '1990411';
 const state = {
   sortBy : 'newFirst',
   searchTerm : '',
+  filterBy : 'all',
   userId : '',
   isSuperUser : false
 }
@@ -211,8 +212,8 @@ function applyVoteStyle(video_id, votes_list, isDisabled, vote_type){
 }
 
 // LOADING
-function loadAllVidReqs(sortBy = 'newFirst', searchTerm =''){
-  fetch(`http://localhost:7777/video-request?sortBy=${sortBy}&searchTerm=${searchTerm}`)
+function loadAllVidReqs(sortBy = 'newFirst', searchTerm = '', filterBy = 'all'){
+  fetch(`http://localhost:7777/video-request?sortBy=${sortBy}&searchTerm=${searchTerm}&filterBy=${filterBy}`)
   .then(bold=>bold.json())
   .then(data=>{
     listOfVidsElm.innerHTML = '';
@@ -277,6 +278,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const formVidReqElm = document.getElementById('formVideoRequest');
   const sortByElm = document.querySelectorAll('[id*=sort_by_]');
   const searchBoxElm = document.getElementById('search_box');
+  const filterByElms = document.querySelectorAll('[id^=filter_by_]')
 
   const formLoginElm = document.querySelector('.form-login');
   const appContentElm = document.querySelector('.app-content');
@@ -294,6 +296,18 @@ document.addEventListener('DOMContentLoaded', function(){
 
   loadAllVidReqs();
 
+
+  // Filter videos
+  filterByElms.forEach(elm=>{
+    elm.addEventListener('click', function(e){
+      e.preventDefault()
+      state.filterBy = e.target.getAttribute('id').split('_')[2]
+      filterByElms.forEach(option=> option.classList.remove('active'))
+      this.classList.add('active')
+      loadAllVidReqs(state.sortBy, state.searchTerm, state.filterBy)
+    })
+  })
+
   // Sort videos
   sortByElm.forEach(elm=>{
     elm.addEventListener('click',function(e){
@@ -301,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
       state.sortBy = this.querySelector('input').value;
       // console.log(sortBy.value);
-      loadAllVidReqs(state.sortBy, state.searchTerm)
+      loadAllVidReqs(state.sortBy, state.searchTerm, state.filterBy)
 
       this.classList.add('active');
       if(state.sortBy === 'topVotedFirst'){
@@ -319,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function(){
    debounce((e)=>{
     state.searchTerm = e.target.value;
 
-    loadAllVidReqs(state.sortBy, state.searchTerm);
+    loadAllVidReqs(state.sortBy, state.searchTerm, state.filterBy);
   },300)
   );
 
