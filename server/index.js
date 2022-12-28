@@ -37,14 +37,15 @@ app.get('/video-request', async (req, res, next) => {
   if( sortBy === 'topVotedFirst'){
    data =  data.sort((prev, next)=>{
       if(
-        prev.votes.ups - prev.votes.downs > 
-        next.votes.ups - next.votes.downs
+        prev.votes.ups.length - prev.votes.downs.length > 
+        next.votes.ups.length - next.votes.downs.length
         ){
         return -1;
         }else{
           return 1;
         }
     })
+
   }
 
   res.send(data);
@@ -74,7 +75,6 @@ app.put('/video-request/vote', async (req, res, next) => {
 
 app.put('/video-request', async (req, res, next) => {
   const { id, status, resVideo } = req.body;
-
   const response = await VideoRequestData.updateRequest(id, status, resVideo);
   res.send(response);
   next();

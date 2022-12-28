@@ -44,6 +44,13 @@ function getSingleVidReq(vidInfo, isPrepend = false){
             }
           </p>
         </div>
+
+        ${ vidInfo.status == 'done'? `<div class="ml-auto mr-3">
+        <iframe width="240" height="135"
+      src="https://www.youtube.com/embed/${vidInfo.video_ref.link}" 
+      frameborder="0" allowfullscreen></iframe>
+      </div>` : ''}
+
         <div class="d-flex flex-column text-center">
           <a id="votes_ups_${vidInfo._id}" class="btn btn-link">🔺</a>
           <h3 id="score_vote_${vidInfo._id}">${
@@ -53,8 +60,12 @@ function getSingleVidReq(vidInfo, isPrepend = false){
         </div>
       </div>
       <div class="card-footer d-flex flex-row justify-content-between">
-        <div>
-          <span class="text-info">${vidInfo.status.toUpperCase()}</span>
+        <div class="${
+          vidInfo.status == 'done' ? 'text-success' : vidInfo.status == 'planned' ? 'text-primary' : ''
+        }">
+          <span>${
+            vidInfo.status.toUpperCase()} ${ vidInfo.status == 'done' ? `on ${new Date(vidInfo.video_ref.date).toLocaleDateString()}` : ''
+          }</span>
           &bullet; added by <strong>${vidInfo.author_name}</strong> on
           <strong>${new Date(vidInfo.submit_date).toLocaleDateString()}</strong>
         </div>
@@ -138,14 +149,13 @@ function getSingleVidReq(vidInfo, isPrepend = false){
     })
   }
 
-  applyVoteStyle(vidInfo._id, vidInfo.votes)
+  applyVoteStyle(vidInfo._id, vidInfo.votes, vidInfo.status == 'done')
 
   const scoreVote = document.getElementById(`score_vote_${vidInfo._id}`);
   const votesElms = document.querySelectorAll(`[id^=votes_][id$=_${vidInfo._id}]`)
 
-
   votesElms.forEach(elm=>{
-    if(state.isSuperUser){
+    if(state.isSuperUser || vidInfo.status == 'done'){
       return
     }
     elm.addEventListener('click', function(e){
@@ -159,7 +169,7 @@ function getSingleVidReq(vidInfo, isPrepend = false){
       }).then(bold => bold.json())
         .then(data => {
           scoreVote.innerText = data.ups.length - data.downs.length ;
-          applyVoteStyle(id, data, vote_type)
+          applyVoteStyle(id, data, vidInfo.status == 'done', vote_type)
         })
     })
   })
@@ -167,11 +177,11 @@ function getSingleVidReq(vidInfo, isPrepend = false){
 }
 
 // Style vote
-function applyVoteStyle(video_id, votes_list, vote_type){
+function applyVoteStyle(video_id, votes_list, isDisabled, vote_type){
   const voteUpsElm = document.getElementById(`votes_ups_${video_id}`);
   const voteDownsElm = document.getElementById(`votes_downs_${video_id}`);
 
-  if(state.isSuperUser){
+  if(isDisabled){
     voteUpsElm.style.opacity = '0.5'
     voteUpsElm.style.cursor = 'not-allowed'
     voteDownsElm.style.opacity = '0.5'
@@ -202,7 +212,6 @@ function applyVoteStyle(video_id, votes_list, vote_type){
 
 // LOADING
 function loadAllVidReqs(sortBy = 'newFirst', searchTerm =''){
-
   fetch(`http://localhost:7777/video-request?sortBy=${sortBy}&searchTerm=${searchTerm}`)
   .then(bold=>bold.json())
   .then(data=>{

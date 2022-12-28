@@ -35,7 +35,7 @@ module.exports = {
         date: resVideo && new Date(),
       },
     };
-
+    console.log(updates)
     return VideoRequest.findByIdAndUpdate(id, updates, { new: true });
   },
 
